@@ -15,63 +15,90 @@ namespace TeamSportApi.Controllers
     [ApiController]
     public class PlayerController : ControllerBase
     {
-        [HttpPost("savePlayer")]
-        public Player ReturnPlayer([FromBody] Player newPlayer)
+        string connectionString =
+               "Server=DESKTOP-USC4FN3\\SQLEXPRESS01;DataBase=Teams;User=sa;Integrated Security=SSPI";
+
+        [HttpGet("getplayer")]
+        public ActionResult<List<Player>> GetPlayer()
         {
-            var player = new Player();
-            player.Id = newPlayer.Id;
-            player.Name = newPlayer.Name;
-            player.Position = newPlayer.Position;
-            player.BirthDate = newPlayer.BirthDate;
-            player.Age = newPlayer.Age;
-            player.Nationality = newPlayer.Nationality;
-
-            // salvar os dados
-
-            return player;
+            var players = GetPlayerDatabase();
+            if (players == null)
+                return BadRequest(new { result = new List<Player>(), Message = "Não foi encontrado nenhum jogador", temJogadores = false });
+            return Ok(new { result = players, message = "Jogadores encontrados", temJogadores = true });
 
         }
 
-        [HttpGet("getplayer")]
-        public List<Player> GetPlayer()
+        [HttpPost("addplayer")]
+        public ActionResult<Player> AddPlayer([FromBody] Player player)
         {
-            try { 
-                string connectionString =
-               "Server=DESKTOP-USC4FN3\\SQLEXPRESS01;DataBase=Teams;User=sa;Integrated Security=SSPI";
+            AddPlayerDatabase(player);
+            if (player.Name == "" || player.Position == "" || player.BirthDate == null || player.Age == 0 || player.Nationality == "")
+                return BadRequest(new { message = "Favor preencher todos os dados corretamente." });
+            return Ok(player);
+        }
 
-                string query = "select * from Player";
-                //string queryName = "select [Name] from Player";
+        public List<Player> GetPlayerDatabase()
+        {
+            //try { 
 
-                List<Player> players = new List<Player>();
 
+            string query = "select * from Player";
+            //string queryName = "select [Name] from Player";
+
+            List<Player> players = new List<Player>();
+
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                SqlCommand cmd = new SqlCommand(query, connection);
+                cmd.CommandType = CommandType.Text;
+
+                connection.Open();
+                SqlDataReader rdr = cmd.ExecuteReader();
+
+                while (rdr.Read())
+                {
+                    Player player = new Player();
+                    player.Id = Convert.ToInt32(rdr["Id"]);
+                    player.Name = rdr["Name"].ToString();
+                    player.Position = rdr["Position"].ToString();
+                    player.BirthDate = (DateTime)rdr["BirthDate"];
+                    player.Age = Convert.ToInt32(rdr["Age"]);
+                    player.Nationality = rdr["Nationality"].ToString();
+
+                    players.Add(player);
+                }
+                connection.Close();
+
+                return players;
+            }
+        }
+
+        public void AddPlayerDatabase(Player player)
+        {
+            try
+            {
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
-                    SqlCommand cmd = new SqlCommand(query, connection);
+                    string comandoSql = "insert into Player(Name, Position, BirthDate, Age, Nationality) VALUES(@Name, @Position, @BirthDate, @Age, @Nationality)";
+                    SqlCommand cmd = new SqlCommand(comandoSql, connection);
                     cmd.CommandType = CommandType.Text;
 
+                    //cmd.Parameters.AddWithValue("Id", player.Id);
+                    cmd.Parameters.AddWithValue("Name", player.Name);
+
+                    cmd.Parameters.AddWithValue("Position", player.Position);
+                    cmd.Parameters.AddWithValue("BirthDate", player.BirthDate);
+                    cmd.Parameters.AddWithValue("Age", player.Age);
+                    cmd.Parameters.AddWithValue("Nationality", player.Nationality);
+
                     connection.Open();
-                    SqlDataReader rdr = cmd.ExecuteReader();
-
-                    while (rdr.Read())
-                    {
-                        Player player = new Player();
-                        player.Id = Convert.ToInt32(rdr["Id"]);
-                        player.Name = rdr["Name"].ToString();
-                        player.Position = rdr["Position"].ToString();
-                        player.BirthDate = (DateTime)rdr["BirthDate"];
-                        player.Age = Convert.ToInt32(rdr["Age"]);
-                        player.Nationality = rdr["Nationality"].ToString();
-
-                        players.Add(player);
-                    }
+                    cmd.ExecuteNonQuery();
                     connection.Close();
-
-                    return players;
+                }
             }
-
-            }catch(Exception ex)
+            catch (Exception ex)
             {
-               throw new Exception(ex.Message);
+                throw new Exception(ex.Message);
             }
         }
     }
