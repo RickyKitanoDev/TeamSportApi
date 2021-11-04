@@ -6,7 +6,11 @@
 
 ### Utilizado IDE Visual Studio 2019 versão community, utilizando o projeto ASPNET MVC, SQL SERVER para armazenagem dos dados.
 
+#
+
 ### Libs e Tecnologias utilizadas
+
+#
 
 <table>
   <tr>
@@ -27,6 +31,8 @@
   </tr>
 </table>  
 
+#
+
 ## Funcionalidades implementadas no projeto:
 
 * Cadastrar um jogador( Nome, Posição(atacante,zagueiro, etc), Data de nascimento, Idade e nacionalidade)
@@ -34,5 +40,5 @@
 * Buscar apenas um jogador passando o nome, id ou parte de string. 
 * Editar os dados de um jogador, passando id ou nome.
 * Deletar jogador informando o id.
-
+#
 ### Projeto em desenvolvimento!
