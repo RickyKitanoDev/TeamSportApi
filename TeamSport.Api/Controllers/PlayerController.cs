@@ -19,11 +19,10 @@ namespace TeamSportApi.Controllers
         private static readonly PlayerDataBase dataBase = new PlayerDataBase();
    
         //MÉTODO PARA RETORNAR TODOS OS JOGADORES.
-        [HttpGet("getplayer")]
-        public ActionResult<List<Player>> GetPlayer()
+        [HttpGet("getplayers")]
+        public ActionResult<List<Player>> GetPlayers()
         {
             var players = dataBase.GetPlayerDatabase();
-            
             if (players.Count == 0)
                 return BadRequest(new { result = new List<Player>(), Message = "Não foi encontrado nenhum jogador", temJogadores = false });
             return Ok(new { result = players, message = $"Jogadores encontrados = {players.Count}", temJogadores = true });
@@ -32,14 +31,12 @@ namespace TeamSportApi.Controllers
         //MÉTODO PARA RETORNAR UM JOGADOR, BUSCANDO PELO ID.
         [HttpGet("{id}")]
         public ActionResult GetPlayerId(int id)
+        
         {
             var playerId = dataBase.ReturnPlayerById(id);
             bool playerExist = dataBase.VerifyPlayerExists(id);
-            if (playerExist == true)
-            {
-                dataBase.ReturnPlayerById(id);
-                return Ok(playerId);
-            }
+            if (playerExist == true)            
+                return Ok(playerId);           
             return BadRequest(new { message = "Favor informar um Id de um jogador existente" });
         }
 
@@ -49,13 +46,20 @@ namespace TeamSportApi.Controllers
         {
             Player playerName = dataBase.ReturnPlayerByName(name);
             bool playerExistName = dataBase.VerifyPlayerExistsByName(name);
-            if (playerExistName == true)
-            {
-                dataBase.ReturnPlayerByName(name);
-                return Ok(playerName);
-            }
+            if (playerExistName == true)             
+                return Ok(playerName);          
             return BadRequest(new { message = "Favor Informar um Nome de um jogador existente" });
+        }
 
+        //MÉTODO PARA BUSCAR JOGADOR USANDO PARTE DE STRING
+        [HttpGet("getstring/{search}")]
+        public ActionResult GetPlayerString(string search)
+        {
+            List<Player> playerString = dataBase.ReturnPlayerByString(search);
+            bool playerExistString = dataBase.VerifyPlayerExistsByString(search);
+            if(playerExistString == true)               
+              return Ok(new { result = playerString, message = $"Jogadores encontrados = {playerString.Count}"});
+            return BadRequest(new { message = "Favor verificar o dado inserido na pesquisa, pois não consta no banco de dados" });                
         }
 
         //MÉTODO PARA ADICIONAR UM JOGADOR.
@@ -98,6 +102,5 @@ namespace TeamSportApi.Controllers
             }
             return BadRequest(new { message = "Favor informar um Id de um jogador existente" });
         }
-
     }
 }

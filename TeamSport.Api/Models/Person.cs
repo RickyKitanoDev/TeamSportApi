@@ -14,7 +14,7 @@ namespace TeamSportApi.Models
         [Required(ErrorMessage="Nome deve ser preenchido")]
         public string Name { get; set; }
         [Required(ErrorMessage = "Data de nascimento deve ser preenchida")]
-        public DateTime BirthDate { get; set; }
+        public DateTime? BirthDate { get; set; }
         [Required(ErrorMessage = "Idade deve ser preenchida")]
         public int Age { get; set; }
         [Required(ErrorMessage = "Nacionalidade deve ser preenchida")]

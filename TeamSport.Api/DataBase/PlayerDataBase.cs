@@ -104,6 +104,35 @@ namespace TeamSportApi.DataBase
                 throw new Exception(ex.Message);
             }
         }
+        public List<Player> ReturnPlayerByString(string search)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                List<Player> players = new List<Player>();
+                string returnString = $"Select * from player where name like'%{search}%'";
+                SqlCommand cmd = new SqlCommand(returnString, con);
+                cmd.CommandType = CommandType.Text;
+                con.Open();
+
+                SqlDataReader rdr = cmd.ExecuteReader();
+
+                while (rdr.Read())
+                {
+                    Player player = new Player();
+                    player.Id = Convert.ToInt32(rdr["Id"]);
+                    player.Name = rdr["Name"].ToString();
+                    player.Position = rdr["Position"].ToString();
+                    player.BirthDate = (DateTime)rdr["BirthDate"];
+                    player.Age = Convert.ToInt32(rdr["Age"]);
+                    player.Nationality = rdr["Nationality"].ToString();
+
+                    players.Add(player);
+                }
+                con.Close();
+
+                return players;
+            }
+        }
 
         public void AddPlayerDatabase(Player player)
         {
@@ -206,7 +235,6 @@ namespace TeamSportApi.DataBase
             {
                 throw new Exception(ex.Message);
             }
-
         }
 
         public bool VerifyPlayerExistsByName(string name)
@@ -230,7 +258,33 @@ namespace TeamSportApi.DataBase
                     player.Age = Convert.ToInt32(rdr["Age"]);
                     player.Nationality = rdr["Nationality"].ToString();
                 }
-                if (player.Name != "")
+                if (player.Name != null)
+                    return true;
+                return false;
+            }
+        }
+        public bool VerifyPlayerExistsByString(string search)
+        {
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string returnString = $"Select * from Player where name like '%{search}%'";
+                SqlCommand cmd = new SqlCommand(returnString, con);
+                cmd.CommandType = CommandType.Text;
+
+                con.Open();
+                SqlDataReader rdr = cmd.ExecuteReader();
+                Player player = new Player();
+
+                while (rdr.Read())
+                {
+                    player.Id = Convert.ToInt32(rdr["Id"]);
+                    player.Name = rdr["Name"].ToString();
+                    player.Position = rdr["Position"].ToString();
+                    player.BirthDate = (DateTime)rdr["BirthDate"];
+                    player.Age = Convert.ToInt32(rdr["Age"]);
+                    player.Nationality = rdr["Nationality"].ToString();
+                }
+                if (player.Name != null)
                     return true;
                 return false;
             }
